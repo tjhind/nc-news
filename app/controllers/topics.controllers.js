@@ -1,4 +1,3 @@
-// TOPICS MODELS
 const { fetchTopics } = require("../models/topics.models.js");
 
 exports.getTopics = (req, res, next) => {
