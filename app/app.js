@@ -6,6 +6,9 @@ const {
   getArticleById,
   getArticles,
 } = require("./controllers/articles.controllers");
+const {
+  getCommentsByArticleId,
+} = require("./controllers/comments.controllers");
 
 app.get("/api", getEndpoints);
 
@@ -13,6 +16,8 @@ app.get("/api/topics", getTopics);
 
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
+
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
 app.all("/api/*", (req, res, next) => {
   res.status(404).send({ msg: "Invalid path" });

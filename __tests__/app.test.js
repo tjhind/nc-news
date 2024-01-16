@@ -21,19 +21,14 @@ describe("/api/*", () => {
 
 describe("/api", () => {
   test("GET 200: responds with a description of all other endpoints available", () => {
-    return fs
-      .readFile(
-        "/Users/tiahhind/Northcoders/backend/be-nc-news/endpoints.json",
-        "utf8"
-      )
-      .then((result) => {
-        return request(app)
-          .get("/api")
-          .expect(200)
-          .then((response) => {
-            expect(response.body.endpoints).toEqual(JSON.parse(result));
-          });
-      });
+    return fs.readFile("endpoints.json", "utf8").then((result) => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.endpoints).toEqual(JSON.parse(result));
+        });
+    });
   });
 });
 
@@ -92,22 +87,17 @@ describe("/api/articles/:article_id", () => {
       .get("/api/articles/1")
       .expect(200)
       .then((response) => {
-        expect(response.body.article.article_id).toBe(1);
-        expect(response.body.article.title).toBe(
-          "Living in the shadow of a great man"
-        );
-        expect(response.body.article.topic).toBe("mitch");
-        expect(response.body.article.author).toBe("butter_bridge");
-        expect(response.body.article.body).toBe(
-          "I find this existence challenging"
-        );
-        expect(response.body.article.created_at).toBe(
-          "2020-07-09T20:11:00.000Z"
-        );
-        expect(response.body.article.votes).toBe(100);
-        expect(response.body.article.article_img_url).toBe(
-          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-        );
+        expect(response.body.article).toEqual({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 100,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
       });
   });
   test("GET 404: responds with an error when given a valid but non-existent article_id", () => {
@@ -126,4 +116,41 @@ describe("/api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+});
+
+describe("/api/articles/:article_id/comments", () => {
+  test("GET 200: responds with comments whose article id is in the endpoint with correct properties, sorted by created_at in descending order", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.comments.length).toBe(11);
+        response.body.comments.forEach((comment) => {
+          expect(typeof comment.body).toBe("string");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.author).toBe("string");
+          expect(comment.article_id).toBe(1);
+          expect(typeof comment.created_at).toBe("string");
+        });
+        expect(response.body.comments).toBeSortedBy("created_at", {
+          descending: true,
+        });
+      });
+  });
+  //   test("GET 404: responds with an error when given a valid but non-existent article_id", () => {
+  //     return request(app)
+  //       .get("/api/articles/1111/comments")
+  //       .expect(400)
+  //       .then((response) => {
+  //         expect(response.body.msg).toBe("No comments found");
+  //       });
+  //   });
+  //   test("GET 400: responds with an error when given an invalid article_id", () => {
+  //     return request(app)
+  //       .get("/api/articles/jdks/comments")
+  //       .expect(400)
+  //       .then((response) => {
+  //         expect(response.body.msg).toBe("Bad request");
+  //       });
+  //   });
 });
