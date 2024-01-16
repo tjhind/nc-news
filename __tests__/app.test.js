@@ -280,4 +280,17 @@ describe("/api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  
+  test("POST 404: responds with error when valid but non-existent article_id is given for post request", () => {
+    return request(app)
+      .post("/api/articles/999999/comments")
+      .send({
+        username: "icellusedkars",
+        body: "wow, this article is stupendous!",
+      })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Article not found");
+      });
+  });
 });
