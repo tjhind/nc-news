@@ -12,6 +12,7 @@ const {
   postNewComment,
   deleteCommentById,
 } = require("./controllers/comments.controllers");
+const {getAllUsers} = require("./controllers/users.controllers")
 app.use(express.json());
 
 app.get("/api", getEndpoints);
@@ -25,6 +26,8 @@ app.patch("/api/articles/:article_id", editArticleById);
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.post("/api/articles/:article_id/comments", postNewComment);
 app.delete("/api/comments/:comment_id", deleteCommentById);
+
+app.get("/api/users", getAllUsers);
 
 app.all("*", (req, res, next) => {
   res.status(404).send({ msg: "Invalid path" });
