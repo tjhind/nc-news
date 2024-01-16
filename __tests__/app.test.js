@@ -131,6 +131,67 @@ describe("/api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  test("PATCH 200: responds with object representing updated article", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 100 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updated_article } = body;
+        expect(updated_article).toMatchObject([
+          {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 200,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          },
+        ]);
+      });
+  });
+  test("PATCH 400: responds with error when invalid inc_votes value is given for patch request", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "hello" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("PATCH 400: responds with error when invalid object is given for patch request", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({
+        username: "icellusedkars",
+        body: "wow, this article is stupendous!",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("PATCH 400: responds with error when invalid endpoint is given for patch request", () => {
+    return request(app)
+      .patch("/api/articles/lol")
+      .send({ inc_votes: 200 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("PATCH 404: responds with error when valid but non-existent article_id is given for patch request", () => {
+    return request(app)
+      .patch("/api/articles/100000")
+      .send({ inc_votes: 200 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Article not found");
+      });
+  });
 });
 
 describe("/api/articles/:article_id/comments", () => {
@@ -202,6 +263,17 @@ describe("/api/articles/:article_id/comments", () => {
       .post("/api/articles/1/comments")
       .send({
         username: "icellusedkars",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("POST 400: responds with an error when given a post request body with no username property", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        hello: "hi",
       })
       .expect(400)
       .then((response) => {

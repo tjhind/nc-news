@@ -1,4 +1,5 @@
 const db = require("../connection.js");
+
 exports.fetchArticles = () => {
   return db
     .query(
@@ -17,5 +18,19 @@ exports.fetchArticleById = (article_id) => {
         return Promise.reject({ status: 404, msg: "Article does not exist" });
       }
       return article.rows[0];
+    });
+};
+
+exports.changeArticleById = (article_id, inc_votes) => {
+  return db
+    .query(
+      `UPDATE articles SET votes=votes+$1 WHERE article_id=$2 RETURNING *`,
+      [inc_votes, article_id]
+    )
+    .then((updatedArticle) => {
+      if (!updatedArticle.rows.length) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      }
+      return updatedArticle.rows;
     });
 };
