@@ -1,4 +1,4 @@
-const db = require("/Users/tiahhind/Northcoders/backend/be-nc-news/db/connection.js");
+const db = require("../connection.js");
 const fs = require("fs/promises");
 
 exports.fetchEndpoints = () => {

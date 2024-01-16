@@ -1,6 +1,6 @@
 const app = require("../app/app.js");
 const request = require("supertest");
-const db = require("../db/connection.js");
+const db = require("../app/connection.js");
 const seed = require("../db/seeds/seed.js");
 const data = require("../db/data/test-data");
 const fs = require("fs/promises");
@@ -157,12 +157,52 @@ describe("/api/articles/:article_id/comments", () => {
       .get("/api/articles/1111/comments")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Not found");
+        expect(response.body.msg).toBe("No comments found");
       });
   });
   test("GET 400: responds with an error when given an invalid article_id", () => {
     return request(app)
       .get("/api/articles/jdks/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("POST 201: inserts a new comment into the db and responds with the newly created comment", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        username: "icellusedkars",
+        body: "wow, this article is stupendous!",
+      })
+      .expect(201)
+      .then(({ body }) => {
+        const { new_comment } = body;
+        expect(new_comment.author).toBe("icellusedkars");
+        expect(new_comment.body).toBe("wow, this article is stupendous!");
+        expect(new_comment.article_id).toBe(1);
+        expect(new_comment.votes).toBe(0);
+        expect(typeof new_comment.created_at).toBe("string");
+      });
+  });
+  test("POST 400: responds with an error when given an invalid username in post request body", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        username: "tiahontoast",
+        body: "I'm not a user of this site and I hate this article!",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("POST 400: responds with an error when given a post request body with no body property", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        username: "icellusedkars",
+      })
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
