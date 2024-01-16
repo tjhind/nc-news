@@ -18,10 +18,11 @@ exports.postNewComment = (req, res, next) => {
   const { article_id } = req.params;
   const { username, body } = req.body;
   insertNewComment(article_id, username, body)
-    .then((comment) => {
-      res.status(201).send({ new_comment: comment });
+    .then((new_comment) => {
+      res.status(201).send({ new_comment });
     })
     .catch((err) => {
+      console.log(err);
       next(err);
     });
 };

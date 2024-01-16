@@ -21,6 +21,9 @@ exports.insertNewComment = (article_id, username, body) => {
       [body, username, article_id]
     )
     .then((comment) => {
+      if (!comment.rows.length) {
+        return Promise.reject({ status: 404, msg: "No comments found" });
+      }
       return comment.rows[0];
     });
 };
