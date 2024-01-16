@@ -22,7 +22,6 @@ exports.postNewComment = (req, res, next) => {
       res.status(201).send({ new_comment });
     })
     .catch((err) => {
-      console.log(err);
       next(err);
     });
 };

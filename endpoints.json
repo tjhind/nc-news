@@ -59,5 +59,37 @@
         ]
       }
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "accepts an object containing username and body properties, inserts a new comment into the db with these properties and responds with the newly created comment",
+    "queries": [],
+    "exampleResponse": {
+      "comment": [
+        {
+          "comment_id": 19,
+          "body": "wow, this article is stupendous!",
+          "article_id": 1,
+          "author": "icellusedkars",
+          "votes": 0,
+          "created_at": "2024-01-16T14:56:44.658Z"
+        }
+      ]
+    }
+  },
+  "PATCH /api/articles/article_id": {
+    "description": "accepts an object containing expected vote increment and responds with updated article with updated votes property",
+    "queries": [],
+    "exampleResponse": {
+      "updated_article": [
+        {
+          "comment_id": 19,
+          "body": "wow, this article is stupendous!",
+          "article_id": 1,
+          "author": "icellusedkars",
+          "votes": 0,
+          "created_at": "2024-01-16T14:56:44.658Z"
+        }
+      ]
+    }
   }
 }
