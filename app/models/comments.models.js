@@ -8,7 +8,7 @@ exports.fetchCommentsByArticleId = (article_id) => {
     )
     .then((comments) => {
       if (!comments.rows.length) {
-        return Promise.reject({ status: 404, msg: "No comments found" });
+        return Promise.reject({ status: 404, msg: "Not found" });
       }
       return comments.rows;
     });

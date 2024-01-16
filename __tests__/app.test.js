@@ -48,7 +48,7 @@ describe("/api/topics", () => {
 });
 
 describe("/api/articles", () => {
-  test("GET 200: responds with an array of all articles sorted by date in descending order, with body property removed", () => {
+  test("GET 200: responds with an array that returns all articles, with body property removed", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -60,10 +60,17 @@ describe("/api/articles", () => {
           expect(typeof article.title).toBe("string");
           expect(typeof article.topic).toBe("string");
           expect(typeof article.author).toBe("string");
-          expect(typeof article.body).toBe("undefined");
+          expect(article).not.toHaveProperty("body");
           expect(typeof article.created_at).toBe("string");
           expect(typeof article.article_img_url).toBe("string");
         });
+      });
+  });
+  test("GET 200: responds with an array that returns all articles, sorted bu created_at in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((response) => {
         expect(response.body.articles).toBeSortedBy("created_at", {
           descending: true,
         });
@@ -79,6 +86,14 @@ describe("/api/articles", () => {
         });
       });
   });
+  test("GET 404: responds with an error when wrong endpoint is requested", () => {
+    return request(app)
+      .get("/api/banana")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid path");
+      });
+  });
 });
 
 describe("/api/articles/:article_id", () => {
@@ -87,7 +102,7 @@ describe("/api/articles/:article_id", () => {
       .get("/api/articles/1")
       .expect(200)
       .then((response) => {
-        expect(response.body.article).toEqual({
+        expect(response.body.article).toMatchObject({
           article_id: 1,
           title: "Living in the shadow of a great man",
           topic: "mitch",
@@ -137,20 +152,20 @@ describe("/api/articles/:article_id/comments", () => {
         });
       });
   });
-  //   test("GET 404: responds with an error when given a valid but non-existent article_id", () => {
-  //     return request(app)
-  //       .get("/api/articles/1111/comments")
-  //       .expect(400)
-  //       .then((response) => {
-  //         expect(response.body.msg).toBe("No comments found");
-  //       });
-  //   });
-  //   test("GET 400: responds with an error when given an invalid article_id", () => {
-  //     return request(app)
-  //       .get("/api/articles/jdks/comments")
-  //       .expect(400)
-  //       .then((response) => {
-  //         expect(response.body.msg).toBe("Bad request");
-  //       });
-  //   });
+  test("GET 404: responds with an error when given a valid but non-existent article_id", () => {
+    return request(app)
+      .get("/api/articles/1111/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+  test("GET 400: responds with an error when given an invalid article_id", () => {
+    return request(app)
+      .get("/api/articles/jdks/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
 });
