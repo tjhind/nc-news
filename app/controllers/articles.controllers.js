@@ -20,9 +20,7 @@ exports.getArticleById = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.editArticleById = (req, res, next) => {
@@ -32,7 +30,5 @@ exports.editArticleById = (req, res, next) => {
     .then((updated_article) => {
       res.status(200).send({ updated_article });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };

@@ -22,15 +22,17 @@ exports.fetchArticleById = (article_id) => {
 };
 
 exports.changeArticleById = (article_id, inc_votes) => {
-  return db
-    .query(
-      `UPDATE articles SET votes=votes+$1 WHERE article_id=$2 RETURNING *`,
-      [inc_votes, article_id]
-    )
-    .then((updatedArticle) => {
-      if (!updatedArticle.rows.length) {
-        return Promise.reject({ status: 404, msg: "Article not found" });
-      }
-      return updatedArticle.rows;
-    });
+  return this.fetchArticleById(article_id).then(() => {
+    if (!inc_votes) {
+      return Promise.reject({ status: 400, msg: "No inc_votes specified" });
+    }
+    return db
+      .query(
+        `UPDATE articles SET votes=votes+$1 WHERE article_id=$2 RETURNING *`,
+        [inc_votes, article_id]
+      )
+      .then((updatedArticle) => {
+        return updatedArticle.rows;
+      });
+  });
 };

@@ -91,5 +91,12 @@
         }
       ]
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the specified team and sends no body back",
+    "queries": [],
+    "exampleResponse": {
+      "response": "no content"
+    }
   }
 }

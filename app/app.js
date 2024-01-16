@@ -10,6 +10,7 @@ const {
 const {
   getCommentsByArticleId,
   postNewComment,
+  deleteCommentById,
 } = require("./controllers/comments.controllers");
 app.use(express.json());
 
@@ -20,8 +21,10 @@ app.get("/api/topics", getTopics);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
 app.patch("/api/articles/:article_id", editArticleById);
+
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.post("/api/articles/:article_id/comments", postNewComment);
+app.delete("/api/comments/:comment_id", deleteCommentById);
 
 app.all("*", (req, res, next) => {
   res.status(404).send({ msg: "Invalid path" });

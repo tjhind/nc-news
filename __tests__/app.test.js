@@ -131,10 +131,54 @@ describe("/api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
-  test("PATCH 200: responds with object representing updated article", () => {
+  test("PATCH 200: responds with object representing updated article when inc votes is positive", () => {
     return request(app)
       .patch("/api/articles/1")
       .send({ inc_votes: 100 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updated_article } = body;
+        expect(updated_article).toMatchObject([
+          {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 200,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          },
+        ]);
+      });
+  });
+  test("PATCH 200: responds with object representing updated article when inc votes is negative", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: -100 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updated_article } = body;
+        expect(updated_article).toMatchObject([
+          {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 0,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          },
+        ]);
+      });
+  });
+  test("PATCH 200: responds with object representing updated article and ignores additional properties", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 100, tiah: "hello", snack: "apple and peanut butter" })
       .expect(200)
       .then(({ body }) => {
         const { updated_article } = body;
@@ -171,7 +215,7 @@ describe("/api/articles/:article_id", () => {
       })
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe("No inc_votes specified");
       });
   });
   test("PATCH 400: responds with error when invalid endpoint is given for patch request", () => {
@@ -189,7 +233,7 @@ describe("/api/articles/:article_id", () => {
       .send({ inc_votes: 200 })
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Article not found");
+        expect(response.body.msg).toBe("Article does not exist");
       });
   });
 });
@@ -218,7 +262,7 @@ describe("/api/articles/:article_id/comments", () => {
       .get("/api/articles/1111/comments")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("No comments found");
+        expect(response.body.msg).toBe("Article does not exist");
       });
   });
   test("GET 400: responds with an error when given an invalid article_id", () => {
@@ -280,7 +324,6 @@ describe("/api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
-  
   test("POST 404: responds with error when valid but non-existent article_id is given for post request", () => {
     return request(app)
       .post("/api/articles/999999/comments")
@@ -290,7 +333,29 @@ describe("/api/articles/:article_id/comments", () => {
       })
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Article not found");
+        expect(response.body.msg).toBe("Article does not exist");
+      });
+  });
+});
+
+describe("/api/comments/:comment_id", () => {
+  test("DELETE 204: deletes the specified team and sends no body back", () => {
+    return request(app).delete("/api/comments/3").expect(204);
+  });
+  test("DELETE 404: responds with an error when given a valid but non-existent comment_id in endpoint", () => {
+    return request(app)
+      .delete("/api/comments/1999999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Comment not found");
+      });
+  });
+  test("DELETE 400: responds with an error when given an invalid comment_id in endpoint", () => {
+    return request(app)
+      .delete("/api/comments/tiah")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
       });
   });
 });
