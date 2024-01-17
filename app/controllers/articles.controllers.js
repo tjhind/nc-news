@@ -21,7 +21,9 @@ exports.getArticleById = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
-    .catch(next);
+    .catch((error) => {
+      next(error);
+    });
 };
 
 exports.editArticleById = (req, res, next) => {

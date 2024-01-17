@@ -115,7 +115,7 @@ test("GET 404: responds with an error when wrong endpoint is requested", () => {
 });
 
 describe("/api/articles/:article_id", () => {
-  test("GET 200: responds with correct article with all keys", () => {
+  test("GET 200: responds with correct article with all keys including a comment count equal to a sum of all the comments for that article", () => {
     return request(app)
       .get("/api/articles/1")
       .expect(200)
@@ -130,6 +130,7 @@ describe("/api/articles/:article_id", () => {
           votes: 100,
           article_img_url:
             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          comment_count: "11",
         });
       });
   });
