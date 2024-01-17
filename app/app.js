@@ -12,7 +12,7 @@ const {
   postNewComment,
   deleteCommentById,
 } = require("./controllers/comments.controllers");
-const {getAllUsers} = require("./controllers/users.controllers")
+const { getAllUsers } = require("./controllers/users.controllers");
 app.use(express.json());
 
 app.get("/api", getEndpoints);
