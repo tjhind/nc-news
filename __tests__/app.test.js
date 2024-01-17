@@ -86,14 +86,32 @@ describe("/api/articles", () => {
         });
       });
   });
-  test("GET 404: responds with an error when wrong endpoint is requested", () => {
+  test("GET 200: responds with an array of all articles filtered by topic if topic query value is specified", () => {
     return request(app)
-      .get("/api/banana")
-      .expect(404)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
       .then((response) => {
-        expect(response.body.msg).toBe("Invalid path");
+        response.body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
       });
   });
+  test("GET 404: responds with an error if no articles are found for topic query value", () => {
+    return request(app)
+      .get("/api/articles?topic=7777")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("No articles found");
+      });
+  });
+});
+test("GET 404: responds with an error when wrong endpoint is requested", () => {
+  return request(app)
+    .get("/api/banana")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Invalid path");
+    });
 });
 
 describe("/api/articles/:article_id", () => {

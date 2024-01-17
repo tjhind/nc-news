@@ -1,13 +1,19 @@
 const db = require("../connection.js");
 
-exports.fetchArticles = () => {
-  return db
-    .query(
-      `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id GROUP BY articles.article_id ORDER BY created_at DESC`
-    )
-    .then((articles) => {
-      return articles.rows;
-    });
+exports.fetchArticles = (topic) => {
+  let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
+  const queryParameters = [];
+  if (topic) {
+    queryStr += ` WHERE UPPER(topic) = $1`;
+    queryParameters.push(topic.toUpperCase());
+  }
+  queryStr += ` GROUP BY articles.article_id ORDER BY created_at DESC`;
+  return db.query(queryStr, queryParameters).then((articles) => {
+    if (!articles.rows.length) {
+      return Promise.reject({ status: 404, msg: "No articles found" });
+    }
+    return articles.rows;
+  });
 };
 
 exports.fetchArticleById = (article_id) => {
