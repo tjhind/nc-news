@@ -7,9 +7,15 @@ const { checkTopicExists } = require("../utils.js");
 
 exports.getArticles = (req, res, next) => {
   const { topic } = req.query;
-  const topicExistenceQuery = checkTopicExists(topic);
-  const fetchQuery = fetchArticles(topic);
-  Promise.all([fetchQuery, topicExistenceQuery])
+
+  const fetchArticlesQuery = fetchArticles(topic);
+  const queries = [fetchArticlesQuery];
+
+  if (topic) {
+    const topicExistenceQuery = checkTopicExists(topic);
+    queries.push(topicExistenceQuery);
+  }
+  Promise.all(queries)
     .then((response) => {
       const articles = response[0];
       res.status(200).send({ articles });

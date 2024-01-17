@@ -1,4 +1,5 @@
 const db = require("../connection.js");
+const { checkTopicExists } = require("../utils.js");
 
 exports.fetchArticles = (topic) => {
   let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
