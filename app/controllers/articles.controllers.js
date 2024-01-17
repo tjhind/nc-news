@@ -3,16 +3,18 @@ const {
   fetchArticles,
   changeArticleById,
 } = require("../models/articles.models.js");
+const { checkTopicExists } = require("../utils.js");
 
 exports.getArticles = (req, res, next) => {
   const { topic } = req.query;
-  fetchArticles(topic)
-    .then((articles) => {
+  const topicExistenceQuery = checkTopicExists(topic);
+  const fetchQuery = fetchArticles(topic);
+  Promise.all([fetchQuery, topicExistenceQuery])
+    .then((response) => {
+      const articles = response[0];
       res.status(200).send({ articles });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -21,9 +23,7 @@ exports.getArticleById = (req, res, next) => {
     .then((article) => {
       res.status(200).send({ article });
     })
-    .catch((error) => {
-      next(error);
-    });
+    .catch(next);
 };
 
 exports.editArticleById = (req, res, next) => {

@@ -9,9 +9,6 @@ exports.fetchArticles = (topic) => {
   }
   queryStr += ` GROUP BY articles.article_id ORDER BY created_at DESC`;
   return db.query(queryStr, queryParameters).then((articles) => {
-    if (!articles.rows.length) {
-      return Promise.reject({ status: 404, msg: "No articles found" });
-    }
     return articles.rows;
   });
 };

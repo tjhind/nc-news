@@ -8,10 +8,10 @@ const fs = require("fs/promises");
 beforeEach(() => seed(data));
 afterAll(() => db.end());
 
-describe("/api/*", () => {
+describe("*", () => {
   test("GET 404: responds with error when given invalid endpoint", () => {
     return request(app)
-      .get("/api/fjdihdkfkhudz")
+      .get("/fjdihdkfkhudz")
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("Invalid path");
@@ -38,7 +38,7 @@ describe("/api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then((response) => {
-        expect(response.body.topics.length).toBe(3);
+        expect(response.body.topics.length).toBe(4);
         response.body.topics.forEach((topic) => {
           expect(typeof topic.description).toBe("string");
           expect(typeof topic.slug).toBe("string");
@@ -66,7 +66,7 @@ describe("/api/articles", () => {
         });
       });
   });
-  test("GET 200: responds with an array that returns all articles, sorted bu created_at in descending order", () => {
+  test("GET 200: responds with an array that returns all articles, sorted by created_at in descending order", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -86,7 +86,7 @@ describe("/api/articles", () => {
         });
       });
   });
-  test("GET 200: responds with an array of all articles filtered by topic if topic query value is specified", () => {
+  test("GET 200: responds with an array of all articles filtered by topic if valid topic query value is specified and has articles belonging to it", () => {
     return request(app)
       .get("/api/articles?topic=mitch")
       .expect(200)
@@ -96,21 +96,21 @@ describe("/api/articles", () => {
         });
       });
   });
-  test("GET 404: responds with an error if no articles are found for topic query value", () => {
+  test("GET 200: responds with an empty array if valid and existent topic query value is given but has no articles belonging to it", () => {
     return request(app)
-      .get("/api/articles?topic=7777")
-      .expect(404)
+      .get("/api/articles?topic=cucumber")
+      .expect(200)
       .then((response) => {
-        expect(response.body.msg).toBe("No articles found");
+        expect(response.body.articles).toEqual([]);
       });
   });
 });
-test("GET 404: responds with an error when wrong endpoint is requested", () => {
+test("GET 404: responds with an error if a valid but nonexistent topic query value is given", () => {
   return request(app)
-    .get("/api/banana")
+    .get("/api/articles?topic=7777")
     .expect(404)
     .then((response) => {
-      expect(response.body.msg).toBe("Invalid path");
+      expect(response.body.msg).toBe("Topic does not exist");
     });
 });
 
@@ -194,7 +194,7 @@ describe("/api/articles/:article_id", () => {
         ]);
       });
   });
-  test("PATCH 200: responds with object representing updated article and ignores additional properties", () => {
+  test("PATCH 200: responds with object representing updated article and ignores additional properties when given", () => {
     return request(app)
       .patch("/api/articles/1")
       .send({ inc_votes: 100, tiah: "hello", snack: "apple and peanut butter" })
@@ -309,7 +309,25 @@ describe("/api/articles/:article_id/comments", () => {
         expect(typeof new_comment.created_at).toBe("string");
       });
   });
-  test("POST 400: responds with an error when given an invalid username in post request body", () => {
+  test("POST 201: inserts a new comment into the db and responds with the newly created comment, ignoring additional fields in request body", () => {
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send({
+        username: "icellusedkars",
+        body: "wow, this article is stupendous!",
+        snack: "protein bar",
+      })
+      .expect(201)
+      .then(({ body }) => {
+        const { new_comment } = body;
+        expect(new_comment.author).toBe("icellusedkars");
+        expect(new_comment.body).toBe("wow, this article is stupendous!");
+        expect(new_comment.article_id).toBe(1);
+        expect(new_comment.votes).toBe(0);
+        expect(typeof new_comment.created_at).toBe("string");
+      });
+  });
+  test("POST 400: responds with an error when given a username in post request body that does not exist in the database", () => {
     return request(app)
       .post("/api/articles/1/comments")
       .send({
