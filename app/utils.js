@@ -10,4 +10,5 @@ exports.checkTopicExists = (topic) => {
         }
       });
   }
+  return ["ok"];
 };
