@@ -104,14 +104,14 @@ describe("/api/articles", () => {
         expect(response.body.articles).toEqual([]);
       });
   });
-});
-test("GET 404: responds with an error if a valid but nonexistent topic query value is given", () => {
-  return request(app)
-    .get("/api/articles?topic=7777")
-    .expect(404)
-    .then((response) => {
-      expect(response.body.msg).toBe("Topic does not exist");
-    });
+  test("GET 404: responds with an error if a valid but nonexistent topic query value is given", () => {
+    return request(app)
+      .get("/api/articles?topic=7777")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Topic does not exist");
+      });
+  });
 });
 test("GET 200: accepts sort_by query responds with articles sorted by column specified", () => {
   return request(app)
@@ -121,6 +121,14 @@ test("GET 200: accepts sort_by query responds with articles sorted by column spe
       expect(response.body.articles).toBeSortedBy("author", {
         descending: true,
       });
+    });
+});
+test("GET 400: responds with an error if an invalid sort_by query value is given", () => {
+  return request(app)
+    .get("/api/articles?sort_by=tiah")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Invalid sort_by query");
     });
 });
 test("GET 200: accepts order query which sets the articles to ascending order when asc is given", () => {
@@ -133,7 +141,15 @@ test("GET 200: accepts order query which sets the articles to ascending order wh
       });
     });
 });
-test.only("GET 200: accepts multiple queries in combination", () => {
+test("GET 400: responds with an error if an invalid order query value is given", () => {
+  return request(app)
+    .get("/api/articles?order=highest")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Invalid order query");
+    });
+});
+test("GET 200: accepts multiple queries in combination", () => {
   return request(app)
     .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
     .expect(200)
@@ -221,6 +237,28 @@ describe("/api/articles/:article_id", () => {
             body: "I find this existence challenging",
             created_at: "2020-07-09T20:11:00.000Z",
             votes: 0,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          },
+        ]);
+      });
+  });
+  test("PATCH 200: responds with object representing unchanged article when inc votes is 0", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 0 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updated_article } = body;
+        expect(updated_article).toMatchObject([
+          {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: "2020-07-09T20:11:00.000Z",
+            votes: 100,
             article_img_url:
               "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
           },
