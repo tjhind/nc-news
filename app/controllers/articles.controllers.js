@@ -3,11 +3,7 @@ const {
   fetchArticles,
   changeArticleById,
 } = require("../models/articles.models.js");
-const {
-  checkTopicExists,
-  checkColumnExists,
-  checkOrderExists,
-} = require("../utils.js");
+const { checkTopicExists, checkColumnExists } = require("../utils.js");
 
 exports.getArticles = (req, res, next) => {
   const { sort_by, order, topic } = req.query;
@@ -18,16 +14,12 @@ exports.getArticles = (req, res, next) => {
     const topicExistenceQuery = checkTopicExists(topic);
     queries.push(topicExistenceQuery);
   }
-  const sortByExistenceQuery = checkColumnExists(sort_by);
-  queries.push(sortByExistenceQuery);
-
   Promise.all(queries)
     .then((response) => {
       const articles = response[0];
       res.status(200).send({ articles });
     })
     .catch((error) => {
-      console.log(error);
       next(error);
     });
 };

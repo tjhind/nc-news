@@ -3,15 +3,30 @@ const db = require("../connection.js");
 exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
 
-  let queryParameters = [sort_by, order];
+  let queryParameters = [];
+  const validSortByQueries = [
+    "created_at",
+    "topic",
+    "title",
+    "author",
+    "votes",
+    "article_id",
+  ];
+  if (!validSortByQueries.includes(sort_by)) {
+    return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
+  }
+
+  const validOrderQueries = ["asc", "desc", "ASC", "DESC"];
+  if (!validOrderQueries.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Invalid order query" });
+  }
 
   if (topic) {
-    queryStr += ` WHERE UPPER(topic) = $3`;
+    queryStr += ` WHERE UPPER(topic) = $1`;
     queryParameters.push(topic.toUpperCase());
   }
-  queryStr += ` GROUP BY articles.article_id ORDER BY $1, $2`;
+  queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
   return db.query(queryStr, queryParameters).then((articles) => {
-    console.log(articles.rows);
     return articles.rows;
   });
 };
@@ -32,7 +47,7 @@ exports.fetchArticleById = (article_id) => {
 
 exports.changeArticleById = (article_id, inc_votes) => {
   return this.fetchArticleById(article_id).then(() => {
-    if (!inc_votes) {
+    if (inc_votes === undefined) {
       return Promise.reject({ status: 400, msg: "No inc_votes specified" });
     }
     return db

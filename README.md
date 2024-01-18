@@ -36,8 +36,7 @@ To clone the repo you'll need to have a local version of [git](https://git-scm.c
 **2. Create .env files**
 
 To connect to databases locally, you will have to create two .env files - one for testing called .env.test, which connects to the test database, and another called .env.development which connects to the development database. In order to set the database for each file you will have to add
-`PGDATABASE={insert database name here}`
-with the appropriate database name for that environment (see /db/setup.sql for database names).
+`PGDATABASE={nc_news_test}` into the test file and `PGDATABASE={nc_news}` into the development file.
 
 **3. Setting up & seeding the databases**
 

@@ -13,16 +13,7 @@ exports.checkTopicExists = (topic) => {
 exports.checkColumnExists = (sort_by) => {
   return db.query(`SELECT $1 FROM articles`, [sort_by]).then(({ rows }) => {
     if (rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "Column does not exist" });
+      return Promise.reject({ status: 404, msg: "Invalid sort_by query" });
     }
   });
-};
-
-exports.checkOrderExists = (order) => {
-  const validOrderQueries = ["asc", "desc", "ASC", "DESC"];
-  if (order.length) {
-    if (!validOrderQueries.includes(order)) {
-      return Promise.reject({ status: 400, msg: "Invalid query" });
-    }
-  }
 };
