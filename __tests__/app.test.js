@@ -113,6 +113,39 @@ test("GET 404: responds with an error if a valid but nonexistent topic query val
       expect(response.body.msg).toBe("Topic does not exist");
     });
 });
+test("GET 200: accepts sort_by query responds with articles sorted by column specified", () => {
+  return request(app)
+    .get("/api/articles?sort_by=author")
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy("author", {
+        descending: true,
+      });
+    });
+});
+test("GET 200: accepts order query which sets the articles to ascending order when asc is given", () => {
+  return request(app)
+    .get("/api/articles?order=asc")
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy("created_at", {
+        ascending: true,
+      });
+    });
+});
+test.only("GET 200: accepts multiple queries in combination", () => {
+  return request(app)
+    .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy("article_id", {
+        ascending: true,
+      });
+      response.body.articles.forEach((article) => {
+        expect(article.topic).toBe("mitch");
+      });
+    });
+});
 
 describe("/api/articles/:article_id", () => {
   test("GET 200: responds with correct article with all keys including a comment count equal to a sum of all the comments for that article", () => {

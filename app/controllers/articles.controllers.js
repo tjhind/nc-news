@@ -3,24 +3,33 @@ const {
   fetchArticles,
   changeArticleById,
 } = require("../models/articles.models.js");
-const { checkTopicExists } = require("../utils.js");
+const {
+  checkTopicExists,
+  checkColumnExists,
+  checkOrderExists,
+} = require("../utils.js");
 
 exports.getArticles = (req, res, next) => {
-  const { topic } = req.query;
+  const { sort_by, order, topic } = req.query;
 
-  const fetchArticlesQuery = fetchArticles(topic);
+  const fetchArticlesQuery = fetchArticles(sort_by, order, topic);
   const queries = [fetchArticlesQuery];
-
   if (topic) {
     const topicExistenceQuery = checkTopicExists(topic);
     queries.push(topicExistenceQuery);
   }
+  const sortByExistenceQuery = checkColumnExists(sort_by);
+  queries.push(sortByExistenceQuery);
+
   Promise.all(queries)
     .then((response) => {
       const articles = response[0];
       res.status(200).send({ articles });
     })
-    .catch(next);
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    });
 };
 
 exports.getArticleById = (req, res, next) => {

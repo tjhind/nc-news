@@ -1,15 +1,17 @@
 const db = require("../connection.js");
-const { checkTopicExists } = require("../utils.js");
 
-exports.fetchArticles = (topic) => {
+exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
   let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
-  const queryParameters = [];
+
+  let queryParameters = [sort_by, order];
+
   if (topic) {
-    queryStr += ` WHERE UPPER(topic) = $1`;
+    queryStr += ` WHERE UPPER(topic) = $3`;
     queryParameters.push(topic.toUpperCase());
   }
-  queryStr += ` GROUP BY articles.article_id ORDER BY created_at DESC`;
+  queryStr += ` GROUP BY articles.article_id ORDER BY $1, $2`;
   return db.query(queryStr, queryParameters).then((articles) => {
+    console.log(articles.rows);
     return articles.rows;
   });
 };

@@ -8,6 +8,8 @@ This is an API built for accessing information such as news articles, topics, an
 
 ### [Hosted version: take a look!](https://news-rpsp.onrender.com)
 
+_may be slow to load on first access due to spinning down after inactivity_
+
 ### Or to clone the repo:
 
 **PLEASE NOTE:**
@@ -31,7 +33,6 @@ To clone the repo you'll need to have a local version of [git](https://git-scm.c
 
 2. Run `npm install` in the terminal of your code editor. This should install all of the dependencies you need: **Express**, **pg**, **pg-format**, and **dotenv**. **supertest** and **jest** should also be installed, along with their add-ons **jest-sorted** and **jest-extended**; they are required for the integrated testing.
 
-
 **2. Create .env files**
 
 To connect to databases locally, you will have to create two .env files - one for testing called .env.test, which connects to the test database, and another called .env.development which connects to the development database. In order to set the database for each file you will have to add
@@ -46,7 +47,5 @@ Run the command `npm run setup-dbs` which will set up both development and test 
 
 To run the server: `npm run start`
 To run the tests: `npm run test`
-
-
 
 **Enjoy! Please feel free to share any feedback by raising an issue on github or sending me a message.**
