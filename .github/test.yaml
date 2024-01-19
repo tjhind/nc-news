@@ -1,34 +1,29 @@
 name: Test & Deploy
 
-on: 
-  pull_request:
+on:
+  push:
     branches:
-      - main 
+      - main
 
-jobs:
-  test-utils:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout and clone repo
-        uses: actions/checkout@v3
-        name: Install dependencies
-        run: npm install
-      - name: Test utils
-        run: npm run utils.test
+test:
+  name: Test
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
 
-  test-app:
-    needs: test-utils
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout and clone repo
-        uses: actions/checkout@v3
-      - name: Setup PSQL
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql db: nc_news_test
-          postgresql user: mr_testymctest
-          postgresql password: pa55word
-      - name: Install dependencies
-        run: npm install
-      - name: Test app
-        uses: PGDATABASE=nc_news_test PGUSER=mr_testymctest PGPASSWORD=pa55word npm test
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+
+    - name: Use PostgreSQL
+      uses: harmon758/postgresql-action@v1
+      with:
+        postgresql db: "my_db"
+        postgresql user: "test_user"
+        postgresql password: "test_password"
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests
+      run: PGDATABASE=my_db PGUSER=test_user PGPASSWORD=test_password npm t
