@@ -1,8 +1,14 @@
 const db = require("../connection.js");
 
-exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
+exports.fetchArticles = (
+  sort_by = "created_at",
+  order = "DESC",
+  topic,
+  limit,
+  p
+) => {
   let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
-
+  const validLimitPQueries = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   let queryParameters = [];
   const validSortByQueries = [
     "created_at",
@@ -26,6 +32,16 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
     queryParameters.push(topic.toUpperCase());
   }
   queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by.toLowerCase()} ${order.toUpperCase()}`;
+
+  if (limit && !p) {
+    if (validLimitPQueries.includes) queryStr += ` LIMIT ${limit}`;
+  }
+  if (limit && p) {
+    queryStr += ` LIMIT ${limit} OFFSET ${limit * p}`;
+  }
+  if (!limit && p) {
+    queryStr += ` LIMIT 10 OFFSET ${10 * p}`;
+  }
   return db.query(queryStr, queryParameters).then((articles) => {
     return articles.rows;
   });
@@ -59,4 +75,21 @@ exports.changeArticleById = (article_id, inc_votes) => {
         return updatedArticle.rows;
       });
   });
+};
+
+exports.insertNewArticle = (
+  title,
+  topic,
+  author,
+  body,
+  article_img_url = "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
+) => {
+  return db
+    .query(
+      `INSERT INTO articles (title, topic, author, body, article_img_url, votes, created_at) VALUES ($1, $2, $3, $4, $5, DEFAULT, DEFAULT) RETURNING *`,
+      [title, topic, author, body, article_img_url]
+    )
+    .then((newArticle) => {
+      return { ...newArticle.rows[0], comment_count: 0 };
+    });
 };
