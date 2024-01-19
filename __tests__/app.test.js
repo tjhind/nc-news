@@ -45,19 +45,38 @@ describe("/api/topics", () => {
         });
       });
   });
-  // test("POST 201: inserts a new topic and responds with newly created topic", () => {
-  //   return request(app)
-  //     .post("/api/topics")
-  //     .send({})
-  //     .expect(201)
-  //     .then((response) => {
-  //       expect(response.body.topics.length).toBe(4);
-  //       response.body.topics.forEach((topic) => {
-  //         expect(typeof topic.description).toBe("string");
-  //         expect(typeof topic.slug).toBe("string");
-  //       });
-  //     });
-  // })
+  test("POST 201: inserts a new topic and responds with newly created topic", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ description: "Fabulous", slug: "friday" })
+      .expect(201)
+      .then((response) => {
+        expect(response.body.newTopic).toMatchObject([
+          {
+            description: "Fabulous",
+            slug: "friday",
+          },
+        ]);
+      });
+  });
+  test("POST 400: responds with an error when given an invalid post request", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ description: "Fabulous" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("POST 400: responds with an error when given a topic that already exists", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ description: "Fabulous", slug: "mitch" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
 });
 
 describe("/api/articles", () => {

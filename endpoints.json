@@ -158,5 +158,14 @@
         "created_at": "2020-10-31T03:03:00.000Z"
       }
     }
+  },
+  "POST /api/topics": {
+    "description": "inserts a new topic and responds with the newly created topic with correct properties",
+    "exampleResponse": {
+      "newTopic": {
+        "description": "Fabulous",
+        "slug": "friday"
+      }
+    }
   }
 }
