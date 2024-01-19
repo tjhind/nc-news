@@ -11,7 +11,7 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "queries": ["author", "topic", "sort_by", "order", "limit", "p"],
     "exampleResponse": {
       "articles": [
         {
@@ -63,7 +63,7 @@
   },
   "POST /api/articles/:article_id/comments": {
     "description": "accepts an object containing username and body properties, inserts a new comment into the db with these properties and responds with the newly created comment",
-    "queries": [],
+    "queries": ["limit", "p"],
     "exampleResponse": {
       "comment": [
         {
@@ -128,7 +128,7 @@
     }
   },
   "PATCH /api/comments/:comment_id": {
-    "description": "pdates the votes on the comment whose comment_id is in the endpoint with inc_votes in request object",
+    "description": "updates the votes on the comment whose comment_id is in the endpoint with inc_votes in request object",
     "queries": [],
     "exampleResponse": {
       "updatedComment": [
@@ -141,6 +141,22 @@
           "created_at": "2020-10-31T03:03:00.000Z"
         }
       ]
+    }
+  },
+  "POST /api/articles": {
+    "description": "inserts a new article with existing topic and author into the db and responds with the newly created article with correct properties",
+    "exampleResponse": {
+      "updatedComment": {
+        "title": "Tiah's adventure",
+        "topic": "mitch",
+        "author": "icellusedkars",
+        "body": "A fun day was had",
+        "article_img_url": "https://tiah-image.com",
+        "article_id": 14,
+        "votes": 0,
+        "comment_count": 0,
+        "created_at": "2020-10-31T03:03:00.000Z"
+      }
     }
   }
 }
