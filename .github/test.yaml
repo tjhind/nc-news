@@ -3,7 +3,7 @@ name: Test & Deploy
 on:
   pull_request:
     branches:
-      - test
+      - main
 
 test:
   name: Test app
