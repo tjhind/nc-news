@@ -1,12 +1,12 @@
 name: Test & Deploy
 
 on:
-  push:
+  pull_request:
     branches:
       - main
 
 test:
-  name: Test
+  name: Test app
   runs-on: ubuntu-latest
   steps:
     - name: Checkout Repo
@@ -18,7 +18,7 @@ test:
     - name: Use PostgreSQL
       uses: harmon758/postgresql-action@v1
       with:
-        postgresql db: "my_db"
+        postgresql db: "nc_news_test"
         postgresql user: "test_user"
         postgresql password: "test_password"
 
@@ -26,4 +26,4 @@ test:
       run: npm ci
 
     - name: Run tests
-      run: PGDATABASE=my_db PGUSER=test_user PGPASSWORD=test_password npm t
+      run: PGDATABASE=nc_news_test PGUSER=test_user PGPASSWORD=test_password npm t
