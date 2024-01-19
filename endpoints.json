@@ -112,5 +112,35 @@
         }
       ]
     }
+  },
+  "GET /api/users/:username": {
+    "description": "responds with an object representing user whose id is in the endpoint",
+    "queries": [],
+    "exampleResponse": {
+      "user": [
+        {
+          "user_id": 2,
+          "username": "butter_bridge",
+          "name": "jonny",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        }
+      ]
+    }
+  },
+  "PATCH /api/comments/:comment_id": {
+    "description": "pdates the votes on the comment whose comment_id is in the endpoint with inc_votes in request object",
+    "queries": [],
+    "exampleResponse": {
+      "updatedComment": [
+        {
+          "comment_id": 2,
+          "body": "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          "votes": 15,
+          "author": "butter_bridge",
+          "article_id": 1,
+          "created_at": "2020-10-31T03:03:00.000Z"
+        }
+      ]
+    }
   }
 }

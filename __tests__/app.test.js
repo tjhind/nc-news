@@ -45,6 +45,19 @@ describe("/api/topics", () => {
         });
       });
   });
+  //   test("POST 201: inserts a new topic and responds with newly created topic", () => {
+  //     return request(app)
+  //       .post("/api/topics")
+  //       .send({})
+  //       .expect(201)
+  //       .then((response) => {
+  //         expect(response.body.topics.length).toBe(4);
+  //         response.body.topics.forEach((topic) => {
+  //           expect(typeof topic.description).toBe("string");
+  //           expect(typeof topic.slug).toBe("string");
+  //         });
+  //       });
+  //   })
 });
 
 describe("/api/articles", () => {
@@ -112,55 +125,55 @@ describe("/api/articles", () => {
         expect(response.body.msg).toBe("Topic does not exist");
       });
   });
-});
-test("GET 200: accepts sort_by query responds with articles sorted by column specified", () => {
-  return request(app)
-    .get("/api/articles?sort_by=author")
-    .expect(200)
-    .then((response) => {
-      expect(response.body.articles).toBeSortedBy("author", {
-        descending: true,
+  test("GET 200: accepts sort_by query responds with articles sorted by column specified", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.articles).toBeSortedBy("author", {
+          descending: true,
+        });
       });
-    });
-});
-test("GET 400: responds with an error if an invalid sort_by query value is given", () => {
-  return request(app)
-    .get("/api/articles?sort_by=tiah")
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe("Invalid sort_by query");
-    });
-});
-test("GET 200: accepts order query which sets the articles to ascending order when asc is given", () => {
-  return request(app)
-    .get("/api/articles?order=asc")
-    .expect(200)
-    .then((response) => {
-      expect(response.body.articles).toBeSortedBy("created_at", {
-        ascending: true,
+  });
+  test("GET 400: responds with an error if an invalid sort_by query value is given", () => {
+    return request(app)
+      .get("/api/articles?sort_by=tiah")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid sort_by query");
       });
-    });
-});
-test("GET 400: responds with an error if an invalid order query value is given", () => {
-  return request(app)
-    .get("/api/articles?order=highest")
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe("Invalid order query");
-    });
-});
-test("GET 200: accepts multiple queries in combination", () => {
-  return request(app)
-    .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
-    .expect(200)
-    .then((response) => {
-      expect(response.body.articles).toBeSortedBy("article_id", {
-        ascending: true,
+  });
+  test("GET 200: accepts order query which sets the articles to ascending order when asc is given", () => {
+    return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.articles).toBeSortedBy("created_at", {
+          ascending: true,
+        });
       });
-      response.body.articles.forEach((article) => {
-        expect(article.topic).toBe("mitch");
+  });
+  test("GET 400: responds with an error if an invalid order query value is given", () => {
+    return request(app)
+      .get("/api/articles?order=highest")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid order query");
       });
-    });
+  });
+  test("GET 200: accepts multiple queries in combination", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.articles).toBeSortedBy("article_id", {
+          ascending: true,
+        });
+        response.body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
 });
 
 describe("/api/articles/:article_id", () => {
@@ -466,6 +479,101 @@ describe("/api/comments/:comment_id", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  test("PATCH 200: updates the votes on the comment whose comment_id is in the endpoint when inc_votes is positive", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toMatchObject({
+          comment_id: 2,
+          body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          votes: 15,
+          author: "butter_bridge",
+          article_id: 1,
+          created_at: "2020-10-31T03:03:00.000Z",
+        });
+      });
+  });
+  test("PATCH 200: responds with object representing updated comment when inc votes is negative", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: -15 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toMatchObject({
+          comment_id: 2,
+          body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          votes: -1,
+          author: "butter_bridge",
+          article_id: 1,
+          created_at: "2020-10-31T03:03:00.000Z",
+        });
+      });
+  });
+  test("PATCH 200: responds with object representing unchanged comment when inc votes is 0", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: 0 })
+      .expect(200)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toMatchObject({
+          comment_id: 2,
+          body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          votes: 14,
+          author: "butter_bridge",
+          article_id: 1,
+          created_at: "2020-10-31T03:03:00.000Z",
+        });
+      });
+  });
+  test("PATCH 200: responds with object representing updated comment and ignores additional properties when given", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: -1, tiah: "hello", snack: "raisins" })
+      .expect(200)
+      .then(({ body }) => {
+        const { updatedComment } = body;
+        expect(updatedComment).toMatchObject({
+          comment_id: 2,
+          body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          votes: 13,
+          author: "butter_bridge",
+          article_id: 1,
+          created_at: "2020-10-31T03:03:00.000Z",
+        });
+      });
+  });
+  test("PATCH 400: responds with error when invalid inc_votes value is given for patch request", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: "hello" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("PATCH 400: responds with error when invalid endpoint is given for patch request", () => {
+    return request(app)
+      .patch("/api/comments/lol")
+      .send({ inc_votes: 200 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("PATCH 404: responds with error when valid but non-existent comment_id is given for patch request", () => {
+    return request(app)
+      .patch("/api/comments/100000")
+      .send({ inc_votes: 200 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Comment does not exist");
+      });
+  });
 });
 
 describe("/api/users", () => {
@@ -480,6 +588,41 @@ describe("/api/users", () => {
           expect(typeof user.name).toBe("string");
           expect(typeof user.avatar_url).toBe("string");
         });
+      });
+  });
+});
+
+describe("/api/users/:username", () => {
+  test("GET 200: responds with a user object with the corresponding username in the endpoint, with the correct properties", () => {
+    return request(app)
+      .get("/api/users/icellusedkars")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.user.username).toBe("icellusedkars");
+        expect(response.body.user.name).toBe("sam");
+        expect(response.body.user.avatar_url).toBe(
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        );
+      });
+  });
+  test("GET 200: responds with a user object with the corresponding upper case username in the endpoint, with the correct properties", () => {
+    return request(app)
+      .get("/api/users/ICELLUSEDKARS")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.user.username).toBe("icellusedkars");
+        expect(response.body.user.name).toBe("sam");
+        expect(response.body.user.avatar_url).toBe(
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        );
+      });
+  });
+  test("GET 404: responds with an error when given a valid but nonexistent username", () => {
+    return request(app)
+      .get("/api/users/tiahontoast")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Username does not exist");
       });
   });
 });

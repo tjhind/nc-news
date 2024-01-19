@@ -12,7 +12,7 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
     "votes",
     "article_id",
   ];
-  if (!validSortByQueries.includes(sort_by)) {
+  if (!validSortByQueries.includes(sort_by.toLowerCase())) {
     return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
   }
 
@@ -25,7 +25,7 @@ exports.fetchArticles = (sort_by = "created_at", order = "DESC", topic) => {
     queryStr += ` WHERE UPPER(topic) = $1`;
     queryParameters.push(topic.toUpperCase());
   }
-  queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
+  queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by.toLowerCase()} ${order.toUpperCase()}`;
   return db.query(queryStr, queryParameters).then((articles) => {
     return articles.rows;
   });
