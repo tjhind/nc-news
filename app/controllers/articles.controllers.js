@@ -3,6 +3,7 @@ const {
   fetchArticles,
   changeArticleById,
   insertNewArticle,
+  removeArticleById,
 } = require("../models/articles.models.js");
 const { checkTopicExists } = require("../utils.js");
 
@@ -53,3 +54,12 @@ exports.postNewArticle = (req, res, next) => {
     })
     .catch(next);
 };
+
+exports.deleteArticleById = (req, res, next) => {
+  const { article_id } = req.params;
+  removeArticleById(article_id)
+    .then((response) => {
+      res.status(204).send({ response });
+    })
+    .catch(next)
+  }

@@ -8,7 +8,7 @@ exports.fetchArticles = (
   p
 ) => {
   let queryStr = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.article_img_url, articles.votes, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id`;
-  const validLimitPQueries = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
   let queryParameters = [];
   const validSortByQueries = [
     "created_at",
@@ -27,6 +27,8 @@ exports.fetchArticles = (
     return Promise.reject({ status: 400, msg: "Invalid order query" });
   }
 
+  const validLimitPQueries = /^[0-9]*$/;
+
   if (topic) {
     queryStr += ` WHERE UPPER(topic) = $1`;
     queryParameters.push(topic.toUpperCase());
@@ -34,12 +36,24 @@ exports.fetchArticles = (
   queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by.toLowerCase()} ${order.toUpperCase()}`;
 
   if (limit && !p) {
-    if (validLimitPQueries.includes) queryStr += ` LIMIT ${limit}`;
+    if (!limit.match(validLimitPQueries)) {
+      return Promise.reject({ status: 400, msg: "Invalid limit query" });
+    }
+    queryStr += ` LIMIT ${limit}`;
   }
   if (limit && p) {
+    if (!p.match(validLimitPQueries) || !limit.match(validLimitPQueries)) {
+      return Promise.reject({
+        status: 400,
+        msg: "Invalid page or limit query",
+      });
+    }
     queryStr += ` LIMIT ${limit} OFFSET ${limit * p}`;
   }
   if (!limit && p) {
+    if (!p.match(validLimitPQueries)) {
+      return Promise.reject({ status: 400, msg: "Invalid page query" });
+    }
     queryStr += ` LIMIT 10 OFFSET ${10 * p}`;
   }
   return db.query(queryStr, queryParameters).then((articles) => {
@@ -50,7 +64,7 @@ exports.fetchArticles = (
 exports.fetchArticleById = (article_id) => {
   return db
     .query(
-      `SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM comments RIGHT JOIN articles ON comments.article_id=articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`,
+      `SELECT articles.*, COUNT(articles.article_id) AS total_count, COUNT(comments.comment_id) AS comment_count FROM comments LEFT JOIN articles ON comments.article_id=articles.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`,
       [article_id]
     )
     .then((article) => {
@@ -91,5 +105,24 @@ exports.insertNewArticle = (
     )
     .then((newArticle) => {
       return { ...newArticle.rows[0], comment_count: 0 };
+    });
+};
+
+exports.removeArticleById = (article_id) => {
+  return db
+    .query(`SELECT * FROM articles WHERE article_id=$1`, [article_id])
+    .then((result) => {
+      if (!result.rows.length) {
+        return Promise.reject({ status: 404, msg: "Article not found" });
+      }
+      return db
+        .query(`DELETE FROM comments WHERE article_id = $1`, [article_id])
+        .then(() => {
+          return db
+            .query(`DELETE FROM articles WHERE article_id = $1`, [article_id])
+            .then((result) => {
+              return result;
+            });
+        });
     });
 };
