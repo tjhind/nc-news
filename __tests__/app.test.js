@@ -59,13 +59,15 @@ describe("/api/topics", () => {
         ]);
       });
   });
-  test("POST 400: responds with an error when given an invalid post request", () => {
+  test("POST 400: responds with an error when given an invalid post request without slug or description", () => {
     return request(app)
       .post("/api/topics")
       .send({ description: "Fabulous" })
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe(
+          "Both topic and description should be provided"
+        );
       });
   });
   test("POST 400: responds with an error when given a topic that already exists", () => {
@@ -329,7 +331,7 @@ describe("/api/articles", () => {
       .get("/api/articles?limit=hello")
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe("Invalid limit query");
       });
   });
   test("GET 400: responds with an error if an invalid p query value is given", () => {
@@ -337,7 +339,7 @@ describe("/api/articles", () => {
       .get("/api/articles?p=hi")
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe("Invalid page query");
       });
   });
 
@@ -508,6 +510,25 @@ describe("/api/articles", () => {
           expect(response.body.msg).toBe("Article does not exist");
         });
     });
+    test("DELETE 204: deletes article whose id is in endpoint", () => {
+      return request(app).delete("/api/articles/1").expect(204);
+    });
+    test("DELETE 404: responds with an error when given a non existent article id", () => {
+      return request(app)
+        .delete("/api/articles/444444")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Article not found");
+        });
+    });
+    test("DELETE 400: responds with an error when given an invalid article id", () => {
+      return request(app)
+        .delete("/api/articles/helloooo")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
   });
 
   describe("/api/articles/:article_id/comments", () => {
@@ -626,214 +647,221 @@ describe("/api/articles", () => {
           expect(response.body.msg).toBe("Article does not exist");
         });
     });
-    // test("GET 200 pagination: accepts limit query which limits the number of comments", () => {
-    //   return request(app)
-    //     .get("/api/articles/1/comments?limit=8")
-    //     .expect(200)
-    //     .then((response) => {
-    //       expect(response.body.articles.length).toBe(8);
-    //     });
-    // });
-    //   test("GET 200 pagination: accepts p query which specifies the start page when limit is also provided", () => {
-    //     return request(app)
-    //       .get("/api/articles?limit=2&p=2")
-    //       .expect(200)
-    //       .then((response) => {
-    //         expect(response.body.articles.length).toBe(2);
-    //       });
-    //   });
-    //   test("GET 200 pagination: accepts p query which specifies the start page when limit is not provided, so limit defaults to 10", () => {
-    //     return request(app)
-    //       .get("/api/articles?p=1")
-    //       .expect(200)
-    //       .then((response) => {
-    //         expect(response.body.articles.length).toBe(3);
-    //       });
-    //   });
-    //   test("GET 400: responds with an error if an invalid limit query value is given", () => {
-    //     return request(app)
-    //       .get("/api/articles?limit=hello")
-    //       .expect(400)
-    //       .then((response) => {
-    //         expect(response.body.msg).toBe("Bad request");
-    //       });
-    //   });
-    //   test("GET 400: responds with an error if an invalid p query value is given", () => {
-    //     return request(app)
-    //       .get("/api/articles?p=hi")
-    //       .expect(400)
-    //       .then((response) => {
-    //         expect(response.body.msg).toBe("Bad request");
-    //       });
-    //   });
-    // });
-
-    describe("/api/comments/:comment_id", () => {
-      test("DELETE 204: deletes the specified team and sends no body back", () => {
-        return request(app).delete("/api/comments/3").expect(204);
-      });
-      test("DELETE 404: responds with an error when given a valid but non-existent comment_id in endpoint", () => {
-        return request(app)
-          .delete("/api/comments/1999999")
-          .expect(404)
-          .then((response) => {
-            expect(response.body.msg).toBe("Comment not found");
-          });
-      });
-      test("DELETE 400: responds with an error when given an invalid comment_id in endpoint", () => {
-        return request(app)
-          .delete("/api/comments/tiah")
-          .expect(400)
-          .then((response) => {
-            expect(response.body.msg).toBe("Bad request");
-          });
-      });
-      test("PATCH 200: updates the votes on the comment whose comment_id is in the endpoint when inc_votes is positive", () => {
-        return request(app)
-          .patch("/api/comments/2")
-          .send({ inc_votes: 1 })
-          .expect(200)
-          .then(({ body }) => {
-            const { updatedComment } = body;
-            expect(updatedComment).toMatchObject({
-              comment_id: 2,
-              body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
-              votes: 15,
-              author: "butter_bridge",
-              article_id: 1,
-              created_at: "2020-10-31T03:03:00.000Z",
-            });
-          });
-      });
-      test("PATCH 200: responds with object representing updated comment when inc votes is negative", () => {
-        return request(app)
-          .patch("/api/comments/2")
-          .send({ inc_votes: -15 })
-          .expect(200)
-          .then(({ body }) => {
-            const { updatedComment } = body;
-            expect(updatedComment).toMatchObject({
-              comment_id: 2,
-              body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
-              votes: -1,
-              author: "butter_bridge",
-              article_id: 1,
-              created_at: "2020-10-31T03:03:00.000Z",
-            });
-          });
-      });
-      test("PATCH 200: responds with object representing unchanged comment when inc votes is 0", () => {
-        return request(app)
-          .patch("/api/comments/2")
-          .send({ inc_votes: 0 })
-          .expect(200)
-          .then(({ body }) => {
-            const { updatedComment } = body;
-            expect(updatedComment).toMatchObject({
-              comment_id: 2,
-              body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
-              votes: 14,
-              author: "butter_bridge",
-              article_id: 1,
-              created_at: "2020-10-31T03:03:00.000Z",
-            });
-          });
-      });
-      test("PATCH 200: responds with object representing updated comment and ignores additional properties when given", () => {
-        return request(app)
-          .patch("/api/comments/2")
-          .send({ inc_votes: -1, tiah: "hello", snack: "raisins" })
-          .expect(200)
-          .then(({ body }) => {
-            const { updatedComment } = body;
-            expect(updatedComment).toMatchObject({
-              comment_id: 2,
-              body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
-              votes: 13,
-              author: "butter_bridge",
-              article_id: 1,
-              created_at: "2020-10-31T03:03:00.000Z",
-            });
-          });
-      });
-      test("PATCH 400: responds with error when invalid inc_votes value is given for patch request", () => {
-        return request(app)
-          .patch("/api/comments/2")
-          .send({ inc_votes: "hello" })
-          .expect(400)
-          .then((response) => {
-            expect(response.body.msg).toBe("Bad request");
-          });
-      });
-      test("PATCH 400: responds with error when invalid endpoint is given for patch request", () => {
-        return request(app)
-          .patch("/api/comments/lol")
-          .send({ inc_votes: 200 })
-          .expect(400)
-          .then((response) => {
-            expect(response.body.msg).toBe("Bad request");
-          });
-      });
-      test("PATCH 404: responds with error when valid but non-existent comment_id is given for patch request", () => {
-        return request(app)
-          .patch("/api/comments/100000")
-          .send({ inc_votes: 200 })
-          .expect(404)
-          .then((response) => {
-            expect(response.body.msg).toBe("Comment does not exist");
-          });
-      });
+    test("GET 200 pagination: accepts limit query which limits the number of comments", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=8")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.comments.length).toBe(8);
+        });
     });
-
-    describe("/api/users", () => {
-      test("GET 200: responds with an array of all users, with the correct properties", () => {
-        return request(app)
-          .get("/api/users")
-          .expect(200)
-          .then((response) => {
-            expect(response.body.users.length).toBe(4);
-            response.body.users.forEach((user) => {
-              expect(typeof user.username).toBe("string");
-              expect(typeof user.name).toBe("string");
-              expect(typeof user.avatar_url).toBe("string");
-            });
-          });
-      });
+    test("GET 200 pagination: accepts p query which specifies the start page when limit is also provided", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=2&p=2")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.comments.length).toBe(2);
+        });
     });
+    test("GET 200 pagination: accepts p query which specifies the start page when limit is not provided, so limit defaults to 10", () => {
+      return request(app)
+        .get("/api/articles/1/comments?p=1")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.comments.length).toBe(1);
+        });
+    });
+    test("GET 400: responds with an error if an invalid limit query value is given", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=hello")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid limit query");
+        });
+    });
+    test("GET 400: responds with an error if an invalid p query value is given", () => {
+      return request(app)
+        .get("/api/articles/1/comments?p=hi")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid page query");
+        });
+    });
+    test("GET 400: responds with an error if an invalid p query and limit value is given", () => {
+      return request(app)
+        .get("/api/articles/1/comments?limit=hello&p=hi")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Invalid page or limit query");
+        });
+    });
+  });
 
-    describe("/api/users/:username", () => {
-      test("GET 200: responds with a user object with the corresponding username in the endpoint, with the correct properties", () => {
-        return request(app)
-          .get("/api/users/icellusedkars")
-          .expect(200)
-          .then((response) => {
-            expect(response.body.user.username).toBe("icellusedkars");
-            expect(response.body.user.name).toBe("sam");
-            expect(response.body.user.avatar_url).toBe(
-              "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
-            );
+  describe("/api/comments/:comment_id", () => {
+    test("DELETE 204: deletes the specified team and sends no body back", () => {
+      return request(app).delete("/api/comments/3").expect(204);
+    });
+    test("DELETE 404: responds with an error when given a valid but non-existent comment_id in endpoint", () => {
+      return request(app)
+        .delete("/api/comments/1999999")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Comment not found");
+        });
+    });
+    test("DELETE 400: responds with an error when given an invalid comment_id in endpoint", () => {
+      return request(app)
+        .delete("/api/comments/tiah")
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
+    test("PATCH 200: updates the votes on the comment whose comment_id is in the endpoint when inc_votes is positive", () => {
+      return request(app)
+        .patch("/api/comments/2")
+        .send({ inc_votes: 1 })
+        .expect(200)
+        .then(({ body }) => {
+          const { updatedComment } = body;
+          expect(updatedComment).toMatchObject({
+            comment_id: 2,
+            body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            votes: 15,
+            author: "butter_bridge",
+            article_id: 1,
+            created_at: "2020-10-31T03:03:00.000Z",
           });
-      });
-      test("GET 200: responds with a user object with the corresponding upper case username in the endpoint, with the correct properties", () => {
-        return request(app)
-          .get("/api/users/ICELLUSEDKARS")
-          .expect(200)
-          .then((response) => {
-            expect(response.body.user.username).toBe("icellusedkars");
-            expect(response.body.user.name).toBe("sam");
-            expect(response.body.user.avatar_url).toBe(
-              "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
-            );
+        });
+    });
+    test("PATCH 200: responds with object representing updated comment when inc votes is negative", () => {
+      return request(app)
+        .patch("/api/comments/2")
+        .send({ inc_votes: -15 })
+        .expect(200)
+        .then(({ body }) => {
+          const { updatedComment } = body;
+          expect(updatedComment).toMatchObject({
+            comment_id: 2,
+            body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            votes: -1,
+            author: "butter_bridge",
+            article_id: 1,
+            created_at: "2020-10-31T03:03:00.000Z",
           });
-      });
-      test("GET 404: responds with an error when given a valid but nonexistent username", () => {
-        return request(app)
-          .get("/api/users/tiahontoast")
-          .expect(404)
-          .then((response) => {
-            expect(response.body.msg).toBe("Username does not exist");
+        });
+    });
+    test("PATCH 200: responds with object representing unchanged comment when inc votes is 0", () => {
+      return request(app)
+        .patch("/api/comments/2")
+        .send({ inc_votes: 0 })
+        .expect(200)
+        .then(({ body }) => {
+          const { updatedComment } = body;
+          expect(updatedComment).toMatchObject({
+            comment_id: 2,
+            body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            votes: 14,
+            author: "butter_bridge",
+            article_id: 1,
+            created_at: "2020-10-31T03:03:00.000Z",
           });
-      });
+        });
+    });
+    test("PATCH 200: responds with object representing updated comment and ignores additional properties when given", () => {
+      return request(app)
+        .patch("/api/comments/2")
+        .send({ inc_votes: -1, tiah: "hello", snack: "raisins" })
+        .expect(200)
+        .then(({ body }) => {
+          const { updatedComment } = body;
+          expect(updatedComment).toMatchObject({
+            comment_id: 2,
+            body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+            votes: 13,
+            author: "butter_bridge",
+            article_id: 1,
+            created_at: "2020-10-31T03:03:00.000Z",
+          });
+        });
+    });
+    test("PATCH 400: responds with error when invalid inc_votes value is given for patch request", () => {
+      return request(app)
+        .patch("/api/comments/2")
+        .send({ inc_votes: "hello" })
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
+    test("PATCH 400: responds with error when invalid endpoint is given for patch request", () => {
+      return request(app)
+        .patch("/api/comments/lol")
+        .send({ inc_votes: 200 })
+        .expect(400)
+        .then((response) => {
+          expect(response.body.msg).toBe("Bad request");
+        });
+    });
+    test("PATCH 404: responds with error when valid but non-existent comment_id is given for patch request", () => {
+      return request(app)
+        .patch("/api/comments/100000")
+        .send({ inc_votes: 200 })
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Comment does not exist");
+        });
+    });
+  });
+
+  describe("/api/users", () => {
+    test("GET 200: responds with an array of all users, with the correct properties", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.users.length).toBe(4);
+          response.body.users.forEach((user) => {
+            expect(typeof user.username).toBe("string");
+            expect(typeof user.name).toBe("string");
+            expect(typeof user.avatar_url).toBe("string");
+          });
+        });
+    });
+  });
+
+  describe("/api/users/:username", () => {
+    test("GET 200: responds with a user object with the corresponding username in the endpoint, with the correct properties", () => {
+      return request(app)
+        .get("/api/users/icellusedkars")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.user.username).toBe("icellusedkars");
+          expect(response.body.user.name).toBe("sam");
+          expect(response.body.user.avatar_url).toBe(
+            "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+          );
+        });
+    });
+    test("GET 200: responds with a user object with the corresponding upper case username in the endpoint, with the correct properties", () => {
+      return request(app)
+        .get("/api/users/ICELLUSEDKARS")
+        .expect(200)
+        .then((response) => {
+          expect(response.body.user.username).toBe("icellusedkars");
+          expect(response.body.user.name).toBe("sam");
+          expect(response.body.user.avatar_url).toBe(
+            "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+          );
+        });
+    });
+    test("GET 404: responds with an error when given a valid but nonexistent username", () => {
+      return request(app)
+        .get("/api/users/tiahontoast")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("Username does not exist");
+        });
     });
   });
 });
