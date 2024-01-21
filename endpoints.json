@@ -167,5 +167,11 @@
         "slug": "friday"
       }
     }
+  },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes an article by its article id, and its respective comments",
+    "exampleResponse": {
+      "response": "no content"
+    }
   }
 }
