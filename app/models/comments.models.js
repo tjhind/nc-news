@@ -1,16 +1,35 @@
 const db = require("../connection.js");
 const { fetchArticleById } = require("./articles.models.js");
 
-exports.fetchCommentsByArticleId = (article_id) => {
+exports.fetchCommentsByArticleId = (article_id, limit, p) => {
   return fetchArticleById(article_id).then(() => {
-    return db
-      .query(
-        `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
-        [article_id]
-      )
-      .then((comments) => {
-        return comments.rows;
-      });
+    let queryStr = `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`;
+    let queryParams = [article_id];
+    const validLimitPQueries = /^[0-9]*$/;
+    if (limit && !p) {
+      if (!limit.match(validLimitPQueries)) {
+        return Promise.reject({ status: 400, msg: "Invalid limit query" });
+      }
+      queryStr += ` LIMIT ${limit}`;
+    }
+    if (limit && p) {
+      if (!p.match(validLimitPQueries) || !limit.match(validLimitPQueries)) {
+        return Promise.reject({
+          status: 400,
+          msg: "Invalid page or limit query",
+        });
+      }
+      queryStr += ` LIMIT ${limit} OFFSET ${limit * p}`;
+    }
+    if (!limit && p) {
+      if (!p.match(validLimitPQueries)) {
+        return Promise.reject({ status: 400, msg: "Invalid page query" });
+      }
+      queryStr += ` LIMIT 10 OFFSET ${10 * p}`;
+    }
+    return db.query(queryStr, queryParams).then((comments) => {
+      return comments.rows;
+    });
   });
 };
 
