@@ -1,4 +1,5 @@
 const db = require("../connection.js");
+const { checkTopicDoesntExist } = require("../utils.js");
 
 exports.fetchTopics = () => {
   return db.query(`SELECT * FROM topics`).then((topics) => {
@@ -8,7 +9,10 @@ exports.fetchTopics = () => {
 
 exports.insertNewTopic = (slug, description) => {
   if (!slug || !description) {
-    return Promise.reject({ status: 400, msg: "Bad request" });
+    return Promise.reject({
+      status: 400,
+      msg: "Both topic and description should be provided",
+    });
   }
   return db
     .query(
