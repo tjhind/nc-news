@@ -31,7 +31,7 @@ jobs:
       - name: Setup PSQL
         uses: harmon758/postgresql-action@v1
         with:
-          postgresql db: test_db
+          postgresql db: nc_news_test
           postgresql user: mr_tiahtest
           postgresql password: pa55word
       - name: Install dependencies
