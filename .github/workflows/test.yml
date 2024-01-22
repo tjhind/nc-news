@@ -19,12 +19,12 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: npm install
-      - name: Test app
-        run: npm run test
+      - name: Test utils
+        run: npm run test-utils
 
   test-app:
     needs: test-utils
-    runs-on: ubunti-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout and clone repo
         uses: actions/checkout@v3
