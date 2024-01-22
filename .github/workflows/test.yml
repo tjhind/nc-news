@@ -11,3 +11,4 @@ jobs:
     steps:
       - name: Say hello
         run: echo 'Hello from the pipeline! Sure is dark in here...'
+
