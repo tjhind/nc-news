@@ -668,7 +668,7 @@ describe("/api/articles", () => {
         .get("/api/articles/1/comments?p=1")
         .expect(200)
         .then((response) => {
-          expect(response.body.comments.length).toBe(1);
+          expect(response.body.comments.length).toBe(2);
         });
     });
     test("GET 400: responds with an error if an invalid limit query value is given", () => {

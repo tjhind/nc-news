@@ -19,13 +19,13 @@ exports.fetchCommentsByArticleId = (article_id, limit, p) => {
           msg: "Invalid page or limit query",
         });
       }
-      queryStr += ` LIMIT ${limit} OFFSET ${limit * p}`;
+      queryStr += ` LIMIT ${limit} OFFSET ${limit * p - 1}`;
     }
     if (!limit && p) {
       if (!p.match(validLimitPQueries)) {
         return Promise.reject({ status: 400, msg: "Invalid page query" });
       }
-      queryStr += ` LIMIT 10 OFFSET ${10 * p}`;
+      queryStr += ` LIMIT 10 OFFSET ${10 * p - 1}`;
     }
     return db.query(queryStr, queryParams).then((comments) => {
       return comments.rows;

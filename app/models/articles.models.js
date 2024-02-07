@@ -17,6 +17,7 @@ exports.fetchArticles = (
     "author",
     "votes",
     "article_id",
+    "comment_count",
   ];
   if (!validSortByQueries.includes(sort_by.toLowerCase())) {
     return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
@@ -48,7 +49,7 @@ exports.fetchArticles = (
         msg: "Invalid page or limit query",
       });
     }
-    queryStr += ` LIMIT ${limit} OFFSET ${limit * p}`;
+    queryStr += ` LIMIT ${limit} OFFSET ${limit * p - 1}`;
   }
   if (!limit && p) {
     if (!p.match(validLimitPQueries)) {
