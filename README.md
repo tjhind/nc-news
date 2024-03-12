@@ -1,14 +1,10 @@
 # News API
 
-Welcome!
-
-This project is a summary of everything I learnt during the backend portion of the Northcoders' bootcamp.
-
 This is an API built for accessing information such as news articles, topics, and users from a database. Endpoints for this project have been designed to be RESTful. There is functionality to interact with the data, such as inserting new comments into the database, and being able to up/downvote them. This functionality, as well as the error handling for it, was built upon fully integrated testing. Examples of the request methods available for each endpoint can be found within the **endpoints.json file**.
 
 ### [Hosted version: take a look!](https://news-rpsp.onrender.com)
 
-_may be slow to load on first access due to spinning down after inactivity_
+_may take a while to warm up_
 
 ### Or to clone the repo:
 
